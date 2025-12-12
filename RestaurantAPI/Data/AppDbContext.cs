@@ -6,7 +6,12 @@ namespace RestaurantAPI.Data
 {
     public class AppDbContext : DbContext
     {
-        public AppDbContext(DbContextOptions<AppDbContext> options) : base(options) { }
+        private readonly ICurrentUserService _currentUserService;
+        public AppDbContext(DbContextOptions<AppDbContext> options, ICurrentUserService currentUserService) 
+        : base(options) 
+        {
+            _currentUserService = currentUserService;
+        }
 
         // --- KHAI BÁO DBSET ---
         public DbSet<Restaurant> Restaurants { get; set; }
@@ -26,6 +31,10 @@ namespace RestaurantAPI.Data
         protected override void OnModelCreating(ModelBuilder modelBuilder)
         {
             base.OnModelCreating(modelBuilder);
+
+            // Lấy RestaurantId từ Token (Nếu không có thì dùng 0 hoặc throw lỗi tùy logic)
+            // Lưu ý: Lúc chạy Migration thì _currentUserService có thể null hoặc không có context, nên cần check null
+            int currentRestaurantId = _currentUserService?.RestaurantId ?? 0;
 
             // =================================================================
             // 1. CẤU HÌNH GLOBAL QUERY FILTER (MULTI-TENANT) - BẰNG REFLECTION
@@ -154,9 +163,15 @@ namespace RestaurantAPI.Data
             {
                 if (typeof(IMustHaveTenant).IsAssignableFrom(entityType.ClrType))
                 {
-                    // Tương đương: modelBuilder.Entity<T>().HasIndex(x => x.RestaurantId);
-                    modelBuilder.Entity(entityType.ClrType)
-                        .HasIndex(nameof(TenantEntity.RestaurantId)); 
+                    // Bước A: Tìm hàm SetGlobalQueryFilter bên dưới
+                    var method = typeof(AppDbContext)
+                        .GetMethod(nameof(SetGlobalQueryFilter), BindingFlags.NonPublic | BindingFlags.Instance) // Lưu ý: Instance, không phải Static
+                        ?.MakeGenericMethod(entityType.ClrType);
+
+                    // Bước B: Gọi hàm đó
+                    // Tham số 1: 'this' -> Chính là instance của AppDbContext hiện tại
+                    // Tham số 2: mảng chứa các tham số của hàm SetGlobalQueryFilter (là modelBuilder)
+                    method?.Invoke(this, new object[] { modelBuilder }); 
                 }
             }
 
@@ -226,9 +241,14 @@ namespace RestaurantAPI.Data
 
         // --- HELPER METHOD CHO REFLECTION ---
         // Hàm này dùng để tạo filter động cho các bảng Tenant
-        static void SetGlobalQueryFilter<T>(ModelBuilder builder, int restaurantId) where T : class, IMustHaveTenant
+        // =================================================================
+        // HÀM HELPER (Bỏ từ khóa static)
+        // =================================================================
+        // Hàm này KHÔNG ĐƯỢC là static, để nó có thể truy cập được 'this.CurrentRestaurantId'
+        void SetGlobalQueryFilter<T>(ModelBuilder builder) where T : class, IMustHaveTenant
         {
-            builder.Entity<T>().HasQueryFilter(e => e.RestaurantId == restaurantId);
+            // Ở đây: this.CurrentRestaurantId sẽ được EF Core dịch thành tham số động
+            builder.Entity<T>().HasQueryFilter(e => e.RestaurantId == this.CurrentRestaurantId);
         }
     }
 }
