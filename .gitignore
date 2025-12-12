@@ -1,0 +1,11 @@
+# Ignore SQL Server Data
+docker-data/
+
+# Ignore build output directories
+[Bb]in/
+[Oo]bj/
+**/bin/
+**/obj/
+
+# Visual Studio temp
+.vs/
