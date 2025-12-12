@@ -1,0 +1,15 @@
+version: '3.8'
+
+services:
+  db:
+    image: mcr.microsoft.com/mssql/server:2019-latest
+    container_name: restaurant_sql_server
+    environment:
+        SA_PASSWORD: "@dmin123"
+        ACCEPT_EULA: "Y"
+        MSSQL_PID: "Developer"
+    ports:
+      - "1433:1433"
+    volumes:
+      - ./docker-data/sql:/var/opt/mssql # QUAN TRỌNG: Mount volume để không mất dữ liệu khi tắt Docker
+    restart: always
