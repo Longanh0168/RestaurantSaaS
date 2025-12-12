@@ -184,3 +184,6 @@ F:\RestaurantSaaS\RestaurantAPI\obj\Debug\net9.0\refint\RestaurantAPI.dll
 F:\RestaurantSaaS\RestaurantAPI\obj\Debug\net9.0\RestaurantAPI.pdb
 F:\RestaurantSaaS\RestaurantAPI\obj\Debug\net9.0\RestaurantAPI.genruntimeconfig.cache
 F:\RestaurantSaaS\RestaurantAPI\obj\Debug\net9.0\ref\RestaurantAPI.dll
+f:\RestaurantSaaS\RestaurantAPI\obj\Debug\net9.0\RestaurantAPI.sourcelink.json
+f:\RestaurantSaaS\RestaurantAPI\bin\Debug\net9.0\AutoMapper.dll
+f:\RestaurantSaaS\RestaurantAPI\bin\Debug\net9.0\AutoMapper.Extensions.Microsoft.DependencyInjection.dll

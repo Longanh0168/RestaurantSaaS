@@ -18,6 +18,7 @@ builder.Services.AddScoped<IProductService, ProductService>();
 builder.Services.AddControllers();
 builder.Services.AddEndpointsApiExplorer();
 builder.Services.AddSwaggerGen();
+builder.Services.AddAutoMapper(typeof(Program));
 
 // Cấu hình Serilog
 Log.Logger = new LoggerConfiguration()
@@ -39,6 +40,7 @@ if (app.Environment.IsDevelopment())
 app.UseHttpsRedirection();
 app.UseAuthorization();
 app.MapControllers();
+
 app.UseMiddleware<RestaurantAPI.Middlewares.ExceptionMiddleware>();
 
 app.Run();
